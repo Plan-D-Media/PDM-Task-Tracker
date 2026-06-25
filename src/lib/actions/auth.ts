@@ -4,6 +4,7 @@ import { z } from "zod";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { publicEnv } from "@/lib/env";
+import { DEV_LOGIN_ENABLED } from "@/lib/dev";
 
 const emailSchema = z
   .string()
@@ -68,4 +69,37 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+/**
+ * DEV-ONLY email + password sign-in (Brief: dev convenience; magic-link is
+ * the real path). Uses `signInWithPassword`, which writes the SAME session
+ * cookies as the magic-link `verifyOtp` flow, then redirects to the
+ * dashboard — so the landed session is identical either way.
+ *
+ * Hard-gated by `DEV_LOGIN_ENABLED`: even if the UI is somehow rendered or
+ * the action is called directly, it refuses unless dev login is enabled.
+ */
+export async function devSignIn(
+  _prev: LoginState,
+  formData: FormData,
+): Promise<LoginState> {
+  if (!DEV_LOGIN_ENABLED) {
+    return { ok: false, message: "Dev login is disabled." };
+  }
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  if (!email || !password) {
+    return { ok: false, message: "Email and password are required." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return { ok: false, message: error.message };
+  }
+
+  // Same destination as the magic-link flow (auth/confirm → `/`).
+  redirect("/");
 }
