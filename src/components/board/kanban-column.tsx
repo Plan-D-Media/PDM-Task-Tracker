@@ -65,20 +65,20 @@ export function KanbanColumn({
   }
 
   return (
-    <div className="flex max-h-full w-72 shrink-0 flex-col rounded-xl bg-[var(--muted)]/60">
+    <div className="flex max-h-full w-72 shrink-0 flex-col rounded-xl bg-(--muted)/60">
       <div className="flex items-center gap-2 px-3 py-2.5">
         <span
           className="size-2.5 rounded-full"
           style={{ backgroundColor: column.color }}
         />
         <span className="text-sm font-semibold">{column.name}</span>
-        <span className="rounded-full bg-[var(--card)] px-1.5 text-xs font-medium text-[var(--muted-foreground)]">
+        <span className="rounded-full bg-card px-1.5 text-xs font-medium text-muted-foreground">
           {tasks.length}
         </span>
         <div className="ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="rounded p-1 text-[var(--muted-foreground)] hover:bg-[var(--card)] hover:text-[var(--foreground)]"
+              className="rounded p-1 text-muted-foreground hover:bg-card hover:text-foreground"
               aria-label="Column actions"
             >
               <MoreVertical className="size-4" />
@@ -103,8 +103,8 @@ export function KanbanColumn({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex min-h-[60px] flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2 transition-colors",
-          isOver && "bg-[var(--accent)]/50",
+          "flex min-h-15 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2 transition-colors",
+          isOver && "bg-(--accent)/50",
         )}
       >
         <SortableContext
@@ -122,7 +122,7 @@ export function KanbanColumn({
           ))}
         </SortableContext>
         {tasks.length === 0 && !isOver && (
-          <p className="px-1 py-3 text-center text-xs text-[var(--muted-foreground)]">
+          <p className="px-1 py-3 text-center text-xs text-muted-foreground">
             No tasks
           </p>
         )}
@@ -161,7 +161,7 @@ function AddTaskInline({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="m-2 mt-0 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-[var(--muted-foreground)] transition-colors hover:bg-[var(--card)] hover:text-[var(--foreground)]"
+        className="m-2 mt-0 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
       >
         <Plus className="size-4" /> Add task
       </button>
@@ -187,7 +187,7 @@ function AddTaskInline({
         }}
         placeholder="Task title…"
         rows={2}
-        className="w-full resize-none rounded-lg border border-[var(--input)] bg-[var(--card)] p-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+        className="w-full resize-none rounded-lg border border-input bg-card p-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </div>
   );
