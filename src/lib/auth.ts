@@ -17,9 +17,14 @@ export async function requireProfile(): Promise<ProfileWithDept> {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Disambiguate the embed: `profiles` and `departments` share TWO FKs
+  // (profiles.department_id → departments, and departments.head_user_id →
+  // profiles), so a bare `departments(*)` embed is ambiguous and PostgREST
+  // errors out. Pin the relationship to the profile's OWN department via the
+  // `profiles.department_id` FK constraint.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*, department:departments(*)")
+    .select("*, department:departments!profiles_department_id_fkey(*)")
     .eq("id", user.id)
     .single();
 

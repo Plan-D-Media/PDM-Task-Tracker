@@ -52,19 +52,23 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (!user && !isPublic(pathname)) {
+  // Redirect while PRESERVING any auth cookies `setAll` wrote onto `response`
+  // (e.g. a rotated token after a refresh). A bare NextResponse.redirect()
+  // drops them, so the next request re-sends the stale cookie → the session
+  // is never persisted → infinite redirect loop. This is the canonical
+  // @supabase/ssr middleware footgun.
+  const redirectTo = (pathnameTarget: string, keepNext = false) => {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (user && pathname === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = pathnameTarget;
     url.search = "";
-    return NextResponse.redirect(url);
-  }
+    if (keepNext) url.searchParams.set("next", pathname);
+    const redirect = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  };
+
+  if (!user && !isPublic(pathname)) return redirectTo("/login", true);
+  if (user && pathname === "/login") return redirectTo("/");
 
   return response;
 }
